@@ -1,0 +1,88 @@
+amos.doron,noajac
+209177021,211419544
+
+1. in the trees package we created the following classes:
+    Flora:
+        class responsible for creating trees in random places within
+        a range of x-values.
+        in order for the Flora class to know in which height it should
+        put the trees, it contains a callback for a Function which gets
+        an x-value and and returns the desired y-value for the tree base.
+        because we wanted the trees to start exactly at ground height,
+        we passed a reference to Terrain::groundHeightAt method, which
+        tells what is the ground height at an x-value.
+        the method createInRange return a list of Tree objects which
+        represent the entire flora in the range. for each possible tree
+        location, we use the CoinToss class in order to randomly choose
+        to place a tree or not. in initializeGame, we iterate through the
+        returned tree list and add all its contained game objects and add
+        them to game objects collection.
+    Tree:
+        represents one tree. each tree contains a Trunk object, a list
+        of Leaf objects, and a list of Fruit objects. these fields can be
+        accessed through getters.
+        the trunk is created at the position given by the tree
+        constructor, then we calculate all the tree top positions as a
+        square above the top of the trunk. these positions are used in
+        order to create the leaves and fruits.
+
+    we used the observer design pattern in order to make the Trunk,
+    Leaves and Fruits act according to the avatar's jumps. we created
+    an AvatarJumpObserver Interface which contains the method
+    onAvatarJump(). each observer implements this method differently,
+    and is added to the avatar's observer list. when the avatar jumps,
+    we call the private method activateJumpObservers(), which goes
+    through the observers list and calls each of their onAvatarJump()
+    methods. this approach makes the code modifiable, allowing to add
+    more jump observers or different functionality with minimal change
+    in the code.
+
+    Trunk:
+        the trunk is created in a given position, then we randomly
+        choose its height. Trunk extends GameObject and implements the
+        interface AvatarJumpObserver, which makes it change its color
+        everytime the avatar jumps. in initializeGame, Trunks are added
+        to the avatar's jumpObservers list to activate the implemented
+        onAvatarJump method.
+    Leaves:
+        class responsible for randomly creating Leaf objects in random
+        places within a List of possible positions. we use the CoinToss
+        class for randomly deciding for each position.
+        the static method Leaves.create() returns a list of Leaf objects
+        to be added to the tree's leaves field.
+    Leaf:
+        class which extends gameObject and implements AvatarJumpObserver,
+        which makes the leaves turn 90 degrees on each avatar jump. we
+        used the Transition and ScheduleTask features in order to make
+        the leaves change their angles and widths. we created methods
+        which creates each of the wanted transitions, and passed these
+        methods as the runnable for the ScheduleTask, together with a
+        random wait time.
+    Fruits:
+        similarly to Leaves, this class is responsible for creating Fruit
+        objects in random places from a given possible positions list.
+        we used CoinToss for randomness.
+    Fruit:
+        class which extends gameObject and implements AvatarJumpObserver,
+        which makes it change colors whenever the avatar jumps. colors are
+        randomly chosen from a list of colors.
+        we used the strategy design pattern to implement the wanted behavior
+        when the avatar eats a fruit. Fruit class contains a list of
+        FruitStrategy objects, and a addStrategy method to add
+        a strategy to the list. each of these strategies implement the
+        onCollisionEnter method, then we override the Fruit's
+        onCollisionEnter method and call each of the strategies' methods.
+    DisappearReappearStrategy:
+        strategy which is responsible for the disappearance and reappearance
+        of the fruit after one cycle when it is eaten by the avatar. we
+        passed 2 callback references for methods which remove and add the
+        fruit to the game object collection, so that we can remove and add
+        the fruit without accessing the gameManager directly and breaking
+        encapsulation.
+    RaiseEnergyStrategy:
+        strategy which is responsible for raising the energy of the avatar
+        when the fruit collides with the avatar. we passed a callback for
+        the avatar::addEnergy method, in order to be able to add the energy,
+        without the need to pass the avatar as a parameter, breaking
+        encapsulation.
+
